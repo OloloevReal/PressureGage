@@ -4,11 +4,9 @@
 #include <DNSServer.h>
 #include "web.h"
 #include "sensor.h"
-#include "ulp.h"
 #include "setup.h"
 
-Sensor_P sp(PIN_ADC);
-
+Sensor sp(PIN_ADC);
 DNSServer dnsServer;
 WebServer server(80);
 
@@ -30,7 +28,7 @@ void handleStates(){
 void handleGetParams(){
   char buf60[60];
   sensor_params_t params = sp.getParams();
-  sprintf_P(buf60, paramsJSON, params._calibrated_pressure, params.volt_offset);
+  sprintf_P(buf60, paramsJSON, params._zero_level, params.volt_offset);
   server.send(200, FPSTR(cType_JSON), buf60);
 }
 
@@ -54,12 +52,13 @@ void handleSetParams()
 
   sensor_params_t param = sp.getParams();
   char buf60[60];
-  sprintf_P(buf60, paramsJSON, param._calibrated_pressure, param.volt_offset);
+  sprintf_P(buf60, paramsJSON, param._zero_level, param.volt_offset);
   server.send(200, FPSTR(cType_JSON), buf60);
 }
 
 void handleRestore(){
     sp.restore();
+    handleGetParams();
 }
 
 void setup() {
@@ -70,11 +69,9 @@ void setup() {
     print_wakeup_reason();  
     //check_efuse();
 
-    ulp_clear_memory();
-    if (ulp_init(PIN_ADC) != ESP_OK){
-      Serial.println(F("Failed to run ULP program!"));
+    if (sp.begin() != ESP_OK){
+        Serial.println(F("Failed to start up ADC measurement!"));
     }
-
 
     WiFi.softAP(AP_NAME);
     Serial.printf("WiFi name is %s\r\n", AP_NAME);

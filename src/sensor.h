@@ -7,22 +7,22 @@
 #include "setup.h"
 #include "utils.h"
 
-#define MPXH6400A
+//#define MPXH6400A
+//#define MPXH6400A_ULP
+//#define S_EMUL
 
-#if defined(MPXH6400A)
-#else
-  #error "Please define MAP model"
-#endif
 
 typedef struct {
     float volt;
     float pa;
     float bar;
-    void clear();
+    void clear(){
+        bar = pa = volt = 0.0;
+    }
 } sensor_value_t;
 
 typedef struct{
-    float _calibrated_pressure;
+    float _zero_level;
     uint32_t volt_offset;
 } sensor_params_t;
 
@@ -31,6 +31,7 @@ class Sensor_P
     public:
         Sensor_P(gpio_num_t gpio_num);
         ~Sensor_P();
+        virtual esp_err_t begin() = 0;
         float getZeroLevel();
         void setZeroLevel(float value);
         void setZeroLevel(String value);
@@ -38,24 +39,29 @@ class Sensor_P
         void setVoltOffset(String value);
         void setVoltOffset(const char* value);
         void setVoltOffset(uint32_t value);
-        const sensor_value_t* getValue();
+        virtual const sensor_value_t* getValue() = 0;
         sensor_params_t getParams();
-        
         void restore();
 
-    private:
+    protected:
         portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
-        adc_unit_t _unit;
-        adc_channel_t _channel;
-        adc_atten_t _atten;
-        adc_bits_width_t _width;
-        int _no_of_samples;
-        esp_adc_cal_characteristics_t *_adc_chars;
         sensor_params_t *_sensor_params;
         sensor_value_t *_sensor_value;
-        void initADC(gpio_num_t gpio_num);
-        uint32_t getADCValue();
-        void calculateValue();
 };
+
+
+#if defined(MPXH6400A)
+    #include "sensors\s_MPXH6400A.h"
+    typedef Sensor_MPXH6400A Sensor;
+#elif defined(MPXH6400A_ULP)
+    #include "ulp.h"
+    #include "sensors\s_MPXH6400A_ulp.h"
+    typedef Sensor_MPXH6400A_ulp Sensor;
+#elif defined(S_EMUL)
+    #include "sensors\s_EMUL.h"
+    typedef Sensor_EMUL Sensor;
+#else
+  #error "Please define MAP model"
+#endif
 
 #endif

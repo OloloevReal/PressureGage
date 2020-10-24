@@ -3,22 +3,20 @@
 
 #include <Arduino.h>
 
+#define FIRMWARE_VERSION "0.0.2"
 
-
-#define FIRMWARE_VERSION "0.0.1"
+//#define MPXH6400A
+#define MPXH6400A_ULP
+//#define S_EMUL
 
 #define LED GPIO_NUM_2
 
-#define RTC_MEM_PROG_START      0x000
-#define RTC_MEM_ADC_CH0         0x700
-#define RTC_MEM_ADC_CH0_RAW     0x701
-#define RTC_MEM_BUFFER_TOP      0x800
+#define AP_NAME         "ESP_PRESSURE"
+#define DEFAULT_VREF    1114
+#define SHIFT_VOLT      16   // mV
+#define PRESSURE_N      100.0 // 750 mm
+//#define PRESSURE_N 101.325 // 760 mm
 
-#define ULP_WAKEUP_PARIOD   100 * 1000
-
-#define AP_NAME "ESP_PRESSURE"
-#define DEFAULT_VREF    1114 //1114 
-#define SHIFT_VOLT  16 // mV
 #define DIVIDER
 
 #define ALG_V1
@@ -36,8 +34,8 @@
     #define SCALE 2
     #define PIN_ADC GPIO_NUM_32
 #endif
-//#define PRESSURE_N 101.325 //760 mm
-#define PRESSURE_N 99.653
+
+
 
 
 #endif

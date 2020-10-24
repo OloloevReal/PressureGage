@@ -6,8 +6,16 @@
 #include <driver/rtc_io.h>
 #include <driver/gpio.h>
 #include <driver/adc.h>
-#include "setup.h"
 #include "utils.h"
+
+
+#define RTC_MEM_PROG_START      0x000
+#define RTC_MEM_ADC_CH0         0x700
+#define RTC_MEM_ADC_CH0_RAW     0x701
+#define RTC_MEM_BUFFER_TOP      0x800
+
+#define ULP_WAKEUP_PARIOD   100 * 1000
+
 
 #define I_CLEAR_R() \
   I_MOVI(R0, 0), \
@@ -16,12 +24,12 @@
   I_MOVI(R3, 0)
 
 
-void ulp_clear_memory(){
+static void ulp_clear_memory(){
         for (int i = RTC_MEM_PROG_START; i < RTC_MEM_BUFFER_TOP; ++i)
       RTC_SLOW_MEM[i] = 0x0000;
 }
 
-esp_err_t ulp_init(gpio_num_t gpio_num){
+static esp_err_t ulp_init(gpio_num_t gpio_num){
 
     adc_unit_t _unit;
     adc_channel_t _channel;
